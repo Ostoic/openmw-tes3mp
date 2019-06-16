@@ -1,14 +1,14 @@
+#pragma warning( disable : 4643 ) 
 #include <iostream>
 
 #include <components/version/version.hpp>
+#include <components/crashcatcher/crashcatcher.hpp>
 #include <components/files/configurationmanager.hpp>
 #include <components/files/escape.hpp>
 #include <components/fallback/validate.hpp>
+#include <components/misc/debugging.hpp>
 
-#include <SDL_messagebox.h>
 #include "engine.hpp"
-
-#include <boost/filesystem/fstream.hpp>
 
 /*
     Start of tes3mp addition
@@ -34,23 +34,12 @@
 #include <unistd.h>
 #endif
 
-#if (defined(__APPLE__) || (defined(__linux)  &&  !defined(ANDROID)) || (defined(__unix) &&  !defined(ANDROID)) || defined(__posix))
-    #define USE_CRASH_CATCHER 1
-#else
-    #define USE_CRASH_CATCHER 0
-#endif
-
-#if USE_CRASH_CATCHER
-#include <csignal>
-extern int cc_install_handlers(int argc, char **argv, int num_signals, int *sigs, const char *logfile, int (*user_info)(char*, char*));
-extern int is_debugger_attached(void);
-#endif
-
 /*
     Start of tes3mp addition
 
     Include additional headers for multiplayer purposes
 */
+#include <components/openmw-mp/ErrorMessages.hpp>
 #include <components/openmw-mp/Log.hpp>
 #include <components/openmw-mp/Utils.hpp>
 #include <components/openmw-mp/Version.hpp>
@@ -230,6 +219,34 @@ bool parseOptions (int argc, char** argv, OMW::Engine& engine, Files::Configurat
         End of tes3mp change (minor)
     */
 
+    /*
+        Start of tes3mp addition
+
+        Check for unmodified tes3mp-credits file; this makes it so people can't repackage official releases with
+        their own made-up credits, though it obviously has no bearing on unofficial releases that change
+        the checksum below
+    */
+    boost::filesystem::path folderPath(boost::filesystem::initial_path<boost::filesystem::path>());
+    folderPath = boost::filesystem::system_complete(boost::filesystem::path(argv[0])).remove_filename();
+    //std::string creditsPath = folderPath.string() + "/tes3mp-credits";
+
+    //unsigned int expectedChecksumInt = Utils::hexStrToInt(TES3MP_CREDITS_CHECKSUM);
+    //bool hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".md", expectedChecksumInt);
+
+    //if (!hasValidCredits)
+    //    hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".txt", expectedChecksumInt);
+
+    //if (!hasValidCredits)
+    //{
+    //    LOG_MESSAGE_SIMPLE(Log::LOG_FATAL, "The client is shutting down");
+    //    LOG_APPEND(Log::LOG_FATAL, "- %s", TES3MP_CREDITS_ERROR);
+    //    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", TES3MP_CREDITS_ERROR, 0);
+    //    return false;
+    //}
+    /*
+        End of tes3mp addition
+    */
+
     engine.setGrabMouse(!variables["no-grab"].as<bool>());
 
     // Font encoding settings
@@ -313,43 +330,25 @@ bool parseOptions (int argc, char** argv, OMW::Engine& engine, Files::Configurat
     return true;
 }
 
-#if defined(_WIN32) && defined(_DEBUG)
-
-class DebugOutput : public boost::iostreams::sink
+int runApplication(int argc, char *argv[])
 {
-public:
-    std::streamsize write(const char *str, std::streamsize size)
-    {
-        // Make a copy for null termination
-        std::string tmp (str, static_cast<unsigned int>(size));
-        // Write string to Visual Studio Debug output
-        OutputDebugString (tmp.c_str ());
-        return size;
-    }
-};
-#else
-class Tee : public boost::iostreams::sink
-{
-public:
-    Tee(std::ostream &stream, std::ostream &stream2)
-        : out(stream), out2(stream2)
-    {
-    }
-
-    std::streamsize write(const char *str, std::streamsize size)
-    {
-        out.write (str, size);
-        out.flush();
-        out2.write (str, size);
-        out2.flush();
-        return size;
-    }
-
-private:
-    std::ostream &out;
-    std::ostream &out2;
-};
+#ifdef __APPLE__
+    boost::filesystem::path binary_path = boost::filesystem::system_complete(boost::filesystem::path(argv[0]));
+    boost::filesystem::current_path(binary_path.parent_path());
+    setenv("OSG_GL_TEXTURE_STORAGE", "OFF", 0);
 #endif
+
+    Files::ConfigurationManager cfgMgr;
+    std::unique_ptr<OMW::Engine> engine;
+    engine.reset(new OMW::Engine(cfgMgr));
+
+    if (parseOptions(argc, argv, *engine, cfgMgr))
+    {
+        engine->go();
+    }
+
+    return 0;
+}
 
 #ifdef ANDROID
 extern "C" int SDL_main(int argc, char**argv)
@@ -357,110 +356,16 @@ extern "C" int SDL_main(int argc, char**argv)
 int main(int argc, char**argv)
 #endif
 {
-#if defined(__APPLE__)
-    setenv("OSG_GL_TEXTURE_STORAGE", "OFF", 0);
-#endif
+    /*
+        Start of tes3mp change (major)
 
-    // Some objects used to redirect cout and cerr
-    // Scope must be here, so this still works inside the catch block for logging exceptions
-    std::streambuf* cout_rdbuf = std::cout.rdbuf ();
-    std::streambuf* cerr_rdbuf = std::cerr.rdbuf ();
-
-#if !(defined(_WIN32) && defined(_DEBUG))
-    boost::iostreams::stream_buffer<Tee> coutsb;
-    boost::iostreams::stream_buffer<Tee> cerrsb;
-#endif
-
-    std::ostream oldcout(cout_rdbuf);
-    std::ostream oldcerr(cerr_rdbuf);
-
-    boost::filesystem::ofstream logfile;
-
-    std::unique_ptr<OMW::Engine> engine;
-
-    int ret = 0;
-    try
-    {
-        Files::ConfigurationManager cfgMgr;
-
-#if defined(_WIN32) && defined(_DEBUG)
-        // Redirect cout and cerr to VS debug output when running in debug mode
-        boost::iostreams::stream_buffer<DebugOutput> sb;
-        sb.open(DebugOutput());
-        std::cout.rdbuf (&sb);
-        std::cerr.rdbuf (&sb);
-#else
-        /*
-            Start of tes3mp change (major)
-
-            Instead of logging information in openmw.log, use a more descriptive filename
-            that includes a timestamp
-        */
-        // Redirect cout and cerr to tes3mp client log
-        logfile.open (boost::filesystem::path(cfgMgr.getLogPath() / "/tes3mp-client-" += Utils::getFilenameTimestamp() += ".log"));
-        /*
-            End of tes3mp change (major)
-        */
-
-        coutsb.open (Tee(logfile, oldcout));
-        cerrsb.open (Tee(logfile, oldcerr));
-
-        std::cout.rdbuf (&coutsb);
-        std::cerr.rdbuf (&cerrsb);
-#endif
-
-        /*
-            Start of tes3mp addition
-
-            Initialize the logger added for multiplayer
-        */
-        LOG_INIT(Log::LOG_INFO);
-        /*
-            End of tes3mp addition
-        */
-
-
-#if USE_CRASH_CATCHER
-        // Unix crash catcher
-        if ((argc == 2 && strcmp(argv[1], "--cc-handle-crash") == 0) || !is_debugger_attached())
-        {
-            int s[5] = { SIGSEGV, SIGILL, SIGFPE, SIGBUS, SIGABRT };
-            cc_install_handlers(argc, argv, 5, s, (cfgMgr.getLogPath() / "crash.log").string().c_str(), NULL);
-            std::cout << "Installing crash catcher" << std::endl;
-        }
-        else
-            std::cout << "Running in a debugger, not installing crash catcher" << std::endl;
-#endif
-
-#ifdef __APPLE__
-        boost::filesystem::path binary_path = boost::filesystem::system_complete(boost::filesystem::path(argv[0]));
-        boost::filesystem::current_path(binary_path.parent_path());
-#endif
-
-        engine.reset(new OMW::Engine(cfgMgr));
-
-        if (parseOptions(argc, argv, *engine, cfgMgr))
-        {
-            engine->go();
-        }
-    }
-    catch (std::exception &e)
-    {
-#if (defined(__APPLE__) || defined(__linux) || defined(__unix) || defined(__posix))
-        if (!isatty(fileno(stdin)))
-#endif
-            SDL_ShowSimpleMessageBox(0, "OpenMW: Fatal error", e.what(), NULL);
-
-        std::cerr << "\nERROR: " << e.what() << std::endl;
-
-        ret = 1;
-    }
-
-    // Restore cout and cerr
-    std::cout.rdbuf(cout_rdbuf);
-    std::cerr.rdbuf(cerr_rdbuf);
-
-    return ret;
+        Instead of logging information in openmw.log, use a more descriptive filename
+        that includes a timestamp
+    */
+    return wrapApplication(&runApplication, argc, argv, "/tes3mp-client-" + Log::getFilenameTimestamp() + ".log");
+    /*
+        End of tes3mp change (major)
+    */
 }
 
 // Platform specific for Windows when there is no console built into the executable.
