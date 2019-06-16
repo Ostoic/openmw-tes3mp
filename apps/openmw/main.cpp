@@ -1,3 +1,4 @@
+#pragma warning( disable : 4643 ) 
 #include <iostream>
 
 #include <components/version/version.hpp>
@@ -227,21 +228,21 @@ bool parseOptions (int argc, char** argv, OMW::Engine& engine, Files::Configurat
     */
     boost::filesystem::path folderPath(boost::filesystem::initial_path<boost::filesystem::path>());
     folderPath = boost::filesystem::system_complete(boost::filesystem::path(argv[0])).remove_filename();
-    std::string creditsPath = folderPath.string() + "/tes3mp-credits";
+    //std::string creditsPath = folderPath.string() + "/tes3mp-credits";
 
-    unsigned int expectedChecksumInt = Utils::hexStrToInt(TES3MP_CREDITS_CHECKSUM);
-    bool hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".md", expectedChecksumInt);
+    //unsigned int expectedChecksumInt = Utils::hexStrToInt(TES3MP_CREDITS_CHECKSUM);
+    //bool hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".md", expectedChecksumInt);
 
-    if (!hasValidCredits)
-        hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".txt", expectedChecksumInt);
+    //if (!hasValidCredits)
+    //    hasValidCredits = Utils::doesFileHaveChecksum(creditsPath + ".txt", expectedChecksumInt);
 
-    if (!hasValidCredits)
-    {
-        LOG_MESSAGE_SIMPLE(Log::LOG_FATAL, "The client is shutting down");
-        LOG_APPEND(Log::LOG_FATAL, "- %s", TES3MP_CREDITS_ERROR);
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", TES3MP_CREDITS_ERROR, 0);
-        return false;
-    }
+    //if (!hasValidCredits)
+    //{
+    //    LOG_MESSAGE_SIMPLE(Log::LOG_FATAL, "The client is shutting down");
+    //    LOG_APPEND(Log::LOG_FATAL, "- %s", TES3MP_CREDITS_ERROR);
+    //    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "tes3mp", TES3MP_CREDITS_ERROR, 0);
+    //    return false;
+    //}
     /*
         End of tes3mp addition
     */
