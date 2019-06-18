@@ -176,8 +176,6 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     pMain->mNetworking->connect(pMain->server, pMain->port, content, collections);
     RestoreMgr(mgr);
 	
-	MumbleLink::initMumble();
-	
     return pMain->mNetworking->isConnected();
 }
 
@@ -233,7 +231,7 @@ void Main::updateWorld(float dt) const
         mLocalPlayer->updateStatsDynamic(true);
         get().getGUIController()->setChatVisible(true);
 		
-		MumbleLink::setIdentity(get().mLocalPlayer->guid.ToString());
+		MumbleLink::getInstance().setIdentity(get().mLocalPlayer->guid.ToString());
     }
     else
     {

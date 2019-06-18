@@ -3,6 +3,7 @@
 
 #include <osg/Vec3f>
 #include <string>
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -17,13 +18,13 @@ struct LinkedMem
     uint32_t uiVersion;
     uint32_t uiTick;
 #endif
-    float   fAvatarPosition[3];
-    float   fAvatarFront[3];
-    float   fAvatarTop[3];
+    osg::Vec3f fAvatarPosition;
+    osg::Vec3f fAvatarFront;
+    osg::Vec3f fAvatarTop;
     wchar_t name[256];
-    float   fCameraPosition[3];
-    float   fCameraFront[3];
-    float   fCameraTop[3];
+    osg::Vec3f fCameraPosition;
+    osg::Vec3f fCameraFront;
+    osg::Vec3f fCameraTop;
     wchar_t identity[256];
 #ifdef WIN32
     UINT32  context_len;
@@ -39,10 +40,31 @@ namespace mwmp
     class MumbleLink
     {
     public:
-        static void initMumble();
-        static void setContext(const std::string &context);
-        static void setIdentity(const std::string &identity);
-        static void updateMumble(const osg::Vec3f &pos, const osg::Vec3f &forward, const osg::Vec3f &up);
+        static constexpr float convert_to_meters = 0.0075f;
+
+        static MumbleLink& getInstance();
+
+    public:
+        void setContext(const std::string &context);
+        void setIdentity(const std::string &identity);
+        void updateMumble(const osg::Vec3f &pos, const osg::Vec3f &forward, const osg::Vec3f &up);
+
+        void log(const std::string& text);
+
+        MumbleLink(const MumbleLink&) = delete;
+        void operator=(const MumbleLink&) = delete;
+
+        ~MumbleLink();
+
+    private:
+        MumbleLink();
+
+    private:
+        LinkedMem* lm_;
+        std::ofstream log_;
+#ifdef _WIN32
+        HANDLE mapHandle_;
+#endif
     };
 }
 

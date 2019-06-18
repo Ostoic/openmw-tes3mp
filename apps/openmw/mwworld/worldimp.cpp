@@ -2014,7 +2014,7 @@ namespace MWWorld
 
         Update listener coordinates for MumbleLink
         */
-        mwmp::MumbleLink::updateMumble(listenerPos, forward, up);
+        mwmp::MumbleLink::getInstance().updateMumble(listenerPos, forward, up);
         /*
         End of tes3mp addition
         */

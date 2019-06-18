@@ -69,7 +69,6 @@ void Log::print(int level, bool hasPrefix, const char *file, int line, const cha
 
     if (hasPrefix)
     {
-
         sstr << "[" << getTime() << "] ";
 
         if (file != 0 && line != 0)
