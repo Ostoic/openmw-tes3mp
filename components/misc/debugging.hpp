@@ -14,6 +14,10 @@
     End of tes3mp addition
 */
 
+#if defined(_WIN32) && defined(_DEBUG)
+#include <Windows.h>
+#endif
+
 #include <SDL_messagebox.h>
 
 namespace Misc

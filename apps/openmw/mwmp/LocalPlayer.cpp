@@ -462,8 +462,12 @@ void LocalPlayer::updateCell(bool forceUpdate)
         getNetworking()->getPlayerPacket(ID_PLAYER_CELL_CHANGE)->Send();
 
         isChangingRegion = false;
+
+        const auto world = MWBase::Environment::get().getWorld();
+
+        world->getCellName();
 		
-		MumbleLink::setContext(MWBase::Environment::get().getWorld()->getCellName());
+		MumbleLink::getInstance().setContext(this->cell.mName);
     }
 }
 
