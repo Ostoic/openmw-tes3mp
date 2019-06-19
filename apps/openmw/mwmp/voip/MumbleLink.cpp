@@ -1,8 +1,12 @@
 #include "MumbleLink.hpp"
 
+#include <components/esm/loadcell.hpp>
+
 #include <algorithm>
 #include <cstring>
 #include <ctime>
+
+#include <fmt/format.h>
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -28,13 +32,14 @@ namespace mwmp
 
             return result;
         }
-    }
 
-    void MumbleLink::log(const std::string& text)
-    {
-        log_<< "[" << getTime() << "] "
-            << "[MumbleLink]: "
-            << text << '\n';
+        template <class Log, class... Args>
+        void log_format(Log& log, const std::string& format, Args&&... args)
+        {
+            log << fmt::format("[{}] [MumbleLink]: {}\n",
+                getTime(), fmt::format(format, std::forward<Args>(args)...)
+            );
+        }
     }
 
     MumbleLink& MumbleLink::getInstance()
@@ -45,6 +50,8 @@ namespace mwmp
 
     MumbleLink::MumbleLink()
         : log_{"mumbleLog.txt"}
+        , cell_{nullptr}
+        , cellOffset_{0}
     {
 #ifdef _WIN32
         mapHandle_ = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
@@ -89,6 +96,16 @@ namespace mwmp
 #endif
     }
 
+    void MumbleLink::setCell(const ESM::Cell& cell)
+    {
+        cell_ = &cell;
+        cellOffset_ = hashCell(cell);
+
+        log_format(log_, "Cell name = {}", cell.mName);
+        log_format(log_, "Cell grid position = ({}, {})", cell.getGridX(), cell.getGridY());
+        log_format(log_, "Hash({}) = {}", cell.mName, hashCell(cell));
+    }
+
     void MumbleLink::setContext(const std::string &context)
     {
         if (lm_ == nullptr)
@@ -96,12 +113,12 @@ namespace mwmp
 
         // Context should be equal for players which should be able to hear each other positional and
         // differ for those who shouldn't (e.g. it could contain the server+port and team)
-        size_t len = std::min(256, static_cast<int>(context.size()));
+        std::size_t len = std::min(256, static_cast<int>(context.size()));
 
         std::memcpy(lm_->context, context.c_str(), len);
         lm_->context_len = static_cast<std::uint32_t>(len);
 
-        this->log("context set = " + context);
+        log_format(log_, "context set = " + context);
     }
 
     void MumbleLink::setIdentity(const std::string &identity)
@@ -111,7 +128,7 @@ namespace mwmp
 
         // Identifier which uniquely identifies a certain player in a context (e.g. the ingame name).
         wcsncpy(lm_->identity, std::wstring(identity.begin(), identity.end()).c_str(), 256);
-        this->log("identity set = " + identity);
+        log_format(log_, "identity set = " + identity);
     }
 
     void MumbleLink::updateMumble(const osg::Vec3f &pos, const osg::Vec3f &forward, const osg::Vec3f &up)
@@ -130,7 +147,7 @@ namespace mwmp
 
         osg::Vec3f front = { forward.x(), forward.z(), forward.y() };
         osg::Vec3f top = { up.x(), up.z(), up.y() };
-        osg::Vec3f position = { pos.x(), pos.z(), pos.y() };
+        osg::Vec3f position = { cellOffset_ + pos.x(), cellOffset_ + pos.z(), cellOffset_ + pos.y() };
 
         // Left handed coordinate system.
         // X positive towards "right".
@@ -152,5 +169,14 @@ namespace mwmp
         lm_->fCameraPosition = position * convert_to_meters;
         lm_->fCameraFront = front;
         lm_->fCameraTop = top;
+    }
+
+    float MumbleLink::hashCell(const ESM::Cell& cell)
+    {
+        if (cell.isExterior())
+            return 0;
+
+        const auto hash = std::hash<std::string>{}(cell.mName);
+        return static_cast<short>(std::numeric_limits<unsigned short>::max() - static_cast<unsigned short>(hash));
     }
 }

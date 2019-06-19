@@ -463,7 +463,9 @@ void LocalPlayer::updateCell(bool forceUpdate)
 
         isChangingRegion = false;
 
-		MumbleLink::getInstance().setContext(this->getNetworking()->serverAddress().ToString());
+        auto& mumble = MumbleLink::getInstance();
+        mumble.setContext(this->getNetworking()->serverAddress().ToString());
+        mumble.setCell(this->cell);
     }
 }
 
