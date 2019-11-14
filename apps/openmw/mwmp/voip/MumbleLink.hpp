@@ -17,8 +17,8 @@
 struct LinkedMem
 {
 #ifdef WIN32
-    UINT32  uiVersion;
-    DWORD   uiTick;
+    UINT32 uiVersion;
+    DWORD uiTick;
 #else
     uint32_t uiVersion;
     uint32_t uiTick;
@@ -32,7 +32,7 @@ struct LinkedMem
     osg::Vec3f fCameraTop;
     wchar_t identity[256];
 #ifdef WIN32
-    UINT32  context_len;
+    UINT32 context_len;
 #else
     uint32_t context_len;
 #endif

@@ -117,7 +117,6 @@ namespace mwmp
         }
 
         lm_->uiTick++;
-
         osg::Vec3f front = {forward.x(), forward.z(), forward.y()};
         osg::Vec3f top = {up.x(), up.z(), up.y()};
         osg::Vec3f position = {cellOffset_ + pos.x(), cellOffset_ + pos.z(), cellOffset_ + pos.y()};

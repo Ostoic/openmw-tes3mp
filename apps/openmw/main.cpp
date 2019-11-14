@@ -222,9 +222,9 @@ bool parseOptions (int argc, char** argv, OMW::Engine& engine, Files::Configurat
     /*
         Start of tes3mp addition
 
-        Check for unmodified tes3mp-credits file; this makes it so people can't repackage official releases with
-        their own made-up credits, though it obviously has no bearing on unofficial releases that change
-        the checksum below
+        Check for unmodified tes3mp-credits file on Windows; this makes it so people can't repackage official
+        releases with their own made-up credits, though it obviously has no bearing on unofficial releases that
+        change the checksum below
     */
     boost::filesystem::path folderPath(boost::filesystem::initial_path<boost::filesystem::path>());
     folderPath = boost::filesystem::system_complete(boost::filesystem::path(argv[0])).remove_filename();

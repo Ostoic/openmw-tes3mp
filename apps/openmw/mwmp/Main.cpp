@@ -61,7 +61,7 @@ std::string Main::getResDir()
     return resourceDir;
 }
 
-std::string loadSettings (Settings::Manager & settings)
+std::string loadSettings(Settings::Manager& settings)
 {
     Files::ConfigurationManager mCfgMgr;
     // Create the settings manager and load default settings file
@@ -91,7 +91,6 @@ Main::Main()
     mLocalPlayer = new LocalPlayer();
     mGUIController = new GUIController();
     mCellController = new CellController();
-    //mLocalPlayer->CharGen(0, 4);
 
     server = "mp.tes3mp.com";
     port = 25565;
@@ -128,22 +127,22 @@ static Settings::CategorySettingValueMap saveUserSettings;
 static Settings::CategorySettingValueMap saveDefaultSettings;
 static Settings::CategorySettingVector saveChangedSettings;
 
-void InitMgr(Settings::Manager &mgr)
+void initializeManager(Settings::Manager &manager)
 {
-    saveUserSettings = mgr.mUserSettings;
-    saveDefaultSettings = mgr.mDefaultSettings;
-    saveChangedSettings = mgr.mChangedSettings;
-    mgr.mUserSettings.clear();
-    mgr.mDefaultSettings.clear();
-    mgr.mChangedSettings.clear();
-    loadSettings(mgr);
+    saveUserSettings = manager.mUserSettings;
+    saveDefaultSettings = manager.mDefaultSettings;
+    saveChangedSettings = manager.mChangedSettings;
+    manager.mUserSettings.clear();
+    manager.mDefaultSettings.clear();
+    manager.mChangedSettings.clear();
+    loadSettings(manager);
 }
 
-void RestoreMgr(Settings::Manager &mgr)
+void restoreManager(Settings::Manager &manager)
 {
-    mgr.mUserSettings = saveUserSettings;
-    mgr.mDefaultSettings = saveDefaultSettings;
-    mgr.mChangedSettings = saveChangedSettings;
+    manager.mUserSettings = saveUserSettings;
+    manager.mDefaultSettings = saveDefaultSettings;
+    manager.mChangedSettings = saveChangedSettings;
 }
 
 bool Main::init(std::vector<std::string> &content, Files::Collections &collections)
@@ -151,17 +150,17 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
     assert(!pMain);
     pMain = new Main();
 
-    Settings::Manager mgr;
-    InitMgr(mgr);
+    Settings::Manager manager;
+    initializeManager(manager);
 
-    int logLevel = mgr.getInt("logLevel", "General");
+    int logLevel = manager.getInt("logLevel", "General");
     Log::SetLevel(logLevel);
     if (address.empty())
     {
-        pMain->server = mgr.getString("destinationAddress", "General");
-        pMain->port = (unsigned short) mgr.getInt("port", "General");
+        pMain->server = manager.getString("destinationAddress", "General");
+        pMain->port = (unsigned short) manager.getInt("port", "General");
 
-        serverPassword = mgr.getString("password", "General");
+        serverPassword = manager.getString("password", "General");
         if (serverPassword.empty())
             serverPassword = TES3MP_DEFAULT_PASSW;
     }
@@ -171,21 +170,22 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
         pMain->server = address.substr(0, delimPos);
         pMain->port = atoi(address.substr(delimPos + 1).c_str());
     }
+
     get().mLocalPlayer->serverPassword = serverPassword;
 
     pMain->mNetworking->connect(pMain->server, pMain->port, content, collections);
-    RestoreMgr(mgr);
-	
+    restoreManager(manager);
+    MumbleLink::initMumble();
     return pMain->mNetworking->isConnected();
 }
 
 void Main::postInit()
 {
-    Settings::Manager mgr;
-    InitMgr(mgr);
+    Settings::Manager manager;
+    initializeManager(manager);
 
-    pMain->mGUIController->setupChat(mgr);
-    RestoreMgr(mgr);
+    pMain->mGUIController->setupChat(manager);
+    restoreManager(manager);
 
     const MWBase::Environment &environment = MWBase::Environment::get();
     environment.getStateManager()->newGame(true);
@@ -229,9 +229,9 @@ void Main::updateWorld(float dt) const
         mNetworking->getPlayerPacket(ID_PLAYER_BASEINFO)->Send();
         mNetworking->getPlayerPacket(ID_LOADED)->Send();
         mLocalPlayer->updateStatsDynamic(true);
+        
         get().getGUIController()->setChatVisible(true);
-		
-		MumbleLink::getInstance().setIdentity(get().mLocalPlayer->guid.ToString());
+        MumbleLink::setIdentity(get().mLocalPlayer->guid.ToString());
     }
     else
     {

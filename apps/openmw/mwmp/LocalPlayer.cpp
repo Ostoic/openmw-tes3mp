@@ -285,6 +285,7 @@ void LocalPlayer::updateAttributes(bool forceUpdate)
     {
         if (ptrNpcStats.getAttribute(i).getBase() != creatureStats.mAttributes[i].mBase ||
             ptrNpcStats.getAttribute(i).getModifier() != creatureStats.mAttributes[i].mMod ||
+            ptrNpcStats.getAttribute(i).getDamage() != creatureStats.mAttributes[i].mDamage ||
             ptrNpcStats.getSkillIncrease(i) != npcStats.mSkillIncrease[i] ||
             forceUpdate)
         {
@@ -319,6 +320,7 @@ void LocalPlayer::updateSkills(bool forceUpdate)
         // Update a skill if its base value has changed at all or its progress has changed enough
         if (ptrNpcStats.getSkill(i).getBase() != npcStats.mSkills[i].mBase ||
             ptrNpcStats.getSkill(i).getModifier() != npcStats.mSkills[i].mMod ||
+            ptrNpcStats.getSkill(i).getDamage() != npcStats.mSkills[i].mDamage ||
             abs(ptrNpcStats.getSkill(i).getProgress() - npcStats.mSkills[i].mProgress) > 0.75 ||
             forceUpdate)
         {
@@ -462,7 +464,6 @@ void LocalPlayer::updateCell(bool forceUpdate)
         getNetworking()->getPlayerPacket(ID_PLAYER_CELL_CHANGE)->Send();
 
         isChangingRegion = false;
-
         auto& mumble = MumbleLink::getInstance();
         mumble.setContext(this->getNetworking()->serverAddress().ToString());
         mumble.setCell(this->cell);
@@ -711,7 +712,7 @@ void LocalPlayer::addItems()
         }
     }
 
-    MWBase::Environment::get().getWindowManager()->getInventoryWindow()->updateItemView();
+    updateInventoryWindow();
 }
 
 void LocalPlayer::addSpells()
@@ -865,6 +866,11 @@ void LocalPlayer::closeInventoryWindows()
         MWBase::Environment::get().getWindowManager()->popGuiMode();
 
     MWBase::Environment::get().getWindowManager()->finishDragDrop();
+}
+
+void LocalPlayer::updateInventoryWindow()
+{
+    MWBase::Environment::get().getWindowManager()->getInventoryWindow()->updateItemView();
 }
 
 void LocalPlayer::setCharacter()
@@ -1308,8 +1314,23 @@ void LocalPlayer::setFactions()
 
 void LocalPlayer::setKills()
 {
+    LOG_MESSAGE_SIMPLE(Log::LOG_INFO, "Received ID_WORLD_KILL_COUNT with the following kill counts:");
+    std::string debugMessage = "";
+
     for (const auto &kill : killChanges.kills)
+    {
+        if (Log::GetLevel() <= Log::LOG_INFO)
+        {
+            if (!debugMessage.empty())
+                debugMessage += ", ";
+
+            debugMessage += kill.refId + ": " + std::to_string(kill.number);
+        }
+
         MWBase::Environment::get().getMechanicsManager()->setDeaths(kill.refId, kill.number);
+    }
+
+    LOG_APPEND(Log::LOG_INFO, "- %s", debugMessage.c_str());
 }
 
 void LocalPlayer::setBooks()
