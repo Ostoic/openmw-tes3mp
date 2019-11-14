@@ -1,9 +1,14 @@
 #ifndef OPENMW_MUMBLELINK_HPP
 #define OPENMW_MUMBLELINK_HPP
 
+#include "../../mwworld/cellstore.hpp"
+
+#define FMT_USE_HEADER
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
 #include <osg/Vec3f>
 #include <string>
-#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -45,11 +50,10 @@ namespace mwmp
         static MumbleLink& getInstance();
 
     public:
+        void setCell(const ESM::Cell& cell);
         void setContext(const std::string &context);
         void setIdentity(const std::string &identity);
         void updateMumble(const osg::Vec3f &pos, const osg::Vec3f &forward, const osg::Vec3f &up);
-
-        void log(const std::string& text);
 
         MumbleLink(const MumbleLink&) = delete;
         void operator=(const MumbleLink&) = delete;
@@ -59,9 +63,13 @@ namespace mwmp
     private:
         MumbleLink();
 
+        static float hashCell(const ESM::Cell& cell);
+
     private:
         LinkedMem* lm_;
-        std::ofstream log_;
+        std::shared_ptr<spdlog::logger> log_;
+        const ESM::Cell* cell_;
+        float cellOffset_;
 #ifdef _WIN32
         HANDLE mapHandle_;
 #endif

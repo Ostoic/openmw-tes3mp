@@ -84,3 +84,4 @@ moc_*.cxx
 *.so
 openmw.appdata.xml
 venv/
+extern/sol/

@@ -1,5 +1,7 @@
 #include "MumbleLink.hpp"
 
+#include <components/esm/loadcell.hpp>
+
 #include <algorithm>
 #include <cstring>
 #include <ctime>
@@ -12,31 +14,6 @@
 
 namespace mwmp
 {
-    namespace
-    {
-        std::string getTime()
-        {
-            time_t t = std::time(0);
-            struct tm *tm = std::localtime(&t);
-            static char result[20];
-
-            std::sprintf(
-                result, "%.4d-%.2d-%.2d %.2d:%.2d:%.2d",
-                1900 + tm->tm_year, tm->tm_mon + 1, tm->tm_mday,
-                tm->tm_hour, tm->tm_min, tm->tm_sec
-            );
-
-            return result;
-        }
-    }
-
-    void MumbleLink::log(const std::string& text)
-    {
-        log_<< "[" << getTime() << "] "
-            << "[MumbleLink]: "
-            << text << '\n';
-    }
-
     MumbleLink& MumbleLink::getInstance()
     {
         static MumbleLink instance;
@@ -44,14 +21,17 @@ namespace mwmp
     }
 
     MumbleLink::MumbleLink()
-        : log_{"mumbleLog.txt"}
+        : log_{std::make_shared<spdlog::logger>("mumble_log", "mumble.log")}
+        , cell_{nullptr}
+        , cellOffset_{0}
+        , lm_{nullptr}
     {
 #ifdef _WIN32
         mapHandle_ = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
         if (mapHandle_ == nullptr)
             return;
 
-        lm_ = reinterpret_cast<LinkedMem *>(MapViewOfFile(mapHandle_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem)));
+        lm_ = reinterpret_cast<LinkedMem*>(MapViewOfFile(mapHandle_, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem)));
         if (lm_ == nullptr)
         {
             CloseHandle(mapHandle_);
@@ -89,6 +69,16 @@ namespace mwmp
 #endif
     }
 
+    void MumbleLink::setCell(const ESM::Cell& cell)
+    {
+        cell_ = &cell;
+        cellOffset_ = hashCell(cell);
+
+        log_->info("Cell name = {}", cell.mName);
+        log_->info("Cell grid position = ({}, {})", cell.getGridX(), cell.getGridY());
+        log_->info("Hash({}) = {}", cell.mName, hashCell(cell));
+    }
+
     void MumbleLink::setContext(const std::string &context)
     {
         if (lm_ == nullptr)
@@ -96,22 +86,22 @@ namespace mwmp
 
         // Context should be equal for players which should be able to hear each other positional and
         // differ for those who shouldn't (e.g. it could contain the server+port and team)
-        size_t len = std::min(256, static_cast<int>(context.size()));
+        std::size_t len = std::min(256, static_cast<int>(context.size()));
 
         std::memcpy(lm_->context, context.c_str(), len);
         lm_->context_len = static_cast<std::uint32_t>(len);
 
-        this->log("context set = " + context);
+        log_->info("context set = " + context);
     }
 
-    void MumbleLink::setIdentity(const std::string &identity)
+    void MumbleLink::setIdentity(const std::string& identity)
     {
         if (lm_ == nullptr)
             return;
 
         // Identifier which uniquely identifies a certain player in a context (e.g. the ingame name).
-        wcsncpy(lm_->identity, std::wstring(identity.begin(), identity.end()).c_str(), 256);
-        this->log("identity set = " + identity);
+        std::wcsncpy(lm_->identity, std::wstring(identity.begin(), identity.end()).c_str(), 256);
+        log_->info("identity set: {}", identity);
     }
 
     void MumbleLink::updateMumble(const osg::Vec3f &pos, const osg::Vec3f &forward, const osg::Vec3f &up)
@@ -121,16 +111,16 @@ namespace mwmp
 
         if (lm_->uiVersion != 2)
         {
-            wcsncpy(lm_->name, L"TES3MP", 256);
-            wcsncpy(lm_->description, L"Supports TES3MP.", 2048);
+            std::wcsncpy(lm_->name, L"TES3MP", 256);
+            std::wcsncpy(lm_->description, L"Supports TES3MP.", 2048);
             lm_->uiVersion = 2;
         }
 
         lm_->uiTick++;
 
-        osg::Vec3f front = { forward.x(), forward.z(), forward.y() };
-        osg::Vec3f top = { up.x(), up.z(), up.y() };
-        osg::Vec3f position = { pos.x(), pos.z(), pos.y() };
+        osg::Vec3f front = {forward.x(), forward.z(), forward.y()};
+        osg::Vec3f top = {up.x(), up.z(), up.y()};
+        osg::Vec3f position = {cellOffset_ + pos.x(), cellOffset_ + pos.z(), cellOffset_ + pos.y()};
 
         // Left handed coordinate system.
         // X positive towards "right".
@@ -152,5 +142,16 @@ namespace mwmp
         lm_->fCameraPosition = position * convert_to_meters;
         lm_->fCameraFront = front;
         lm_->fCameraTop = top;
+    }
+
+    float MumbleLink::hashCell(const ESM::Cell& cell)
+    {
+        if (cell.isExterior())
+            return 0;
+
+        const auto hash = std::hash<std::string>{}(cell.mName);
+        return static_cast<short>(
+            std::numeric_limits<unsigned short>::max() - static_cast<unsigned short>(hash)
+        );
     }
 }
