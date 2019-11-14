@@ -231,7 +231,7 @@ void Main::updateWorld(float dt) const
         mLocalPlayer->updateStatsDynamic(true);
         
         get().getGUIController()->setChatVisible(true);
-        MumbleLink::setIdentity(get().mLocalPlayer->guid.ToString());
+		MumbleLink::getInstance().setIdentity(get().mLocalPlayer->guid.ToString());
     }
     else
     {
