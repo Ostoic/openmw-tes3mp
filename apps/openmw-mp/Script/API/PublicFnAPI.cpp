@@ -19,11 +19,13 @@ Public::Public(ScriptFunc _public, const std::string &name, char ret_type, const
     publics.emplace(name, this);
 }
 
+#ifdef ENABLE_LUA
 Public::Public(ScriptFuncLua _public, lua_State *lua, const std::string &name, char ret_type, const std::string &def) : ScriptFunction(
         _public, lua, ret_type, def)
 {
     publics.emplace(name, this);
 }
+#endif
 
 boost::any Public::Call(const std::string &name, const std::vector<boost::any> &args)
 {

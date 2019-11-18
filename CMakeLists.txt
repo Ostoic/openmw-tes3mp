@@ -1,7 +1,7 @@
 # Apps and tools
 option(BUILD_OPENMW "build OpenMW" ON)
 option(BUILD_OPENMW_MP "build OpenMW-MP" ON)
-option(BUILD_MASTER "build tes3mp master server" OFF)
+option(BUILD_MASTER "build tes3mp master server" ON)
 option(BUILD_BSATOOL "build BSA extractor" ON)
 option(BUILD_ESMTOOL "build ESM inspector" ON)
 option(BUILD_LAUNCHER "build Launcher" ON)
@@ -221,7 +221,7 @@ IF(BUILD_OPENMW OR BUILD_OPENCS)
                     osgdb_tga
                   )
 
-    get_filename_component(OSG_LIB_DIR ${OSGDB_LIBRARY} DIRECTORY)
+    #get_filename_component(OSG_LIB_DIR ${OSGDB_LIBRARY} DIRECTORY)
     set(OSGPlugins_LIB_DIR "${OSG_LIB_DIR}/osgPlugins-${OPENSCENEGRAPH_VERSION}")
 
     if(OSG_STATIC)

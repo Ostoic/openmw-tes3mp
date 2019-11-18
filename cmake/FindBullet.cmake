@@ -24,6 +24,8 @@
 
 include(LibFindMacros)
 
+set(BULLET_ROOT "C:/Users/dinne/Documents/GitHub/Ostoic/openmw-tes3mp-good/MSVC2019_x64/deps/Bullet")
+
 # Macro: _internal_find_bullet_library
 # Checks for the given component by invoking pkgconfig etc.
 macro(_internal_find_bullet_library _lib)

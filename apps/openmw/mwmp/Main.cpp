@@ -175,7 +175,6 @@ bool Main::init(std::vector<std::string> &content, Files::Collections &collectio
 
     pMain->mNetworking->connect(pMain->server, pMain->port, content, collections);
     restoreManager(manager);
-    MumbleLink::initMumble();
     return pMain->mNetworking->isConnected();
 }
 

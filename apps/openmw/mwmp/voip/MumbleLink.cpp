@@ -12,6 +12,8 @@
 #include <unistd.h>
 #endif
 
+#include <spdlog/sinks/rotating_file_sink.h>
+
 namespace mwmp
 {
     MumbleLink& MumbleLink::getInstance()
@@ -21,7 +23,7 @@ namespace mwmp
     }
 
     MumbleLink::MumbleLink()
-        : log_{std::make_shared<spdlog::logger>("mumble_log", "mumble.log")}
+        : log_{spdlog::rotating_logger_mt("mumble-log", "mumble.log", 1024 * 1024 * 5, 1)}
         , cell_{nullptr}
         , cellOffset_{0}
         , lm_{nullptr}
@@ -91,7 +93,7 @@ namespace mwmp
         std::memcpy(lm_->context, context.c_str(), len);
         lm_->context_len = static_cast<std::uint32_t>(len);
 
-        log_->info("context set = " + context);
+        log_->info("context set: {}", context);
     }
 
     void MumbleLink::setIdentity(const std::string& identity)

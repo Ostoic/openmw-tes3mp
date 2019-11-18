@@ -5,7 +5,6 @@
 
 #define FMT_USE_HEADER
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 #include <osg/Vec3f>
 #include <string>

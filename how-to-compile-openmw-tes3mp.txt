@@ -1,0 +1,21 @@
+How to compile openmw-tes3mp
+- install dependencies by running before_* installer script for your OS located in the CI/ folder
+
+- make sure the above script is for your version of Visual Studio. Otherwise you will have to add a new entry to the 
+  list of msvc versions.
+  
+- this will download and install dependencies (boost, Qt, RakNet, etc) to the deps/ folder.
+
+- ^(this isn't really necessary as long as you point the cmake config to all the necessary dependencies).
+
+- take pretty much whatever dependency version (as long as it's fairly recent) and put it into your new build folder'script
+  deps/ folder. You will have to configure cmake to use Qt5 probably. Afterwards, you'll have to find all the dependencies
+  for CMake (Qt, FFMpeg, Bullet, CrabNet, etc). A trick is to find the base directory for each subdependency and then copy it
+  for all the other subdependencies of the current dependency. CMake will be able to find the files.
+  
+- each dependency's CMake find module is slightly different in how it searches for its library and include folders, so you 
+  will need to guide them along by searching for the CMake environment variable that tells them where to look (this location is in
+  the error message usually). Bullet is particularly terrible since you have to explicitly find each lib. You will have to 
+  explicitly find each lib for the cmake variables that have _LIBRARY in their name, not ending in _DIR.  
+  
+- 

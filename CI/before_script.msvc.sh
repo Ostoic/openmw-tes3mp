@@ -92,7 +92,7 @@ Options:
 		Set the build platform, can also be set with environment variable PLATFORM.
 	-u
 		Configure for unity builds.
-	-v <2013/2015/2017>
+	-v <2013/2015/2017/2019>
 		Choose the Visual Studio version to use.
 	-V
 		Run verbosely
@@ -226,10 +226,18 @@ if [ -z $CONFIGURATION ]; then
 fi
 
 if [ -z $VS_VERSION ]; then
-	VS_VERSION="2017"
+	VS_VERSION="2019"
 fi
 
 case $VS_VERSION in
+	16|16.0|2019 )
+		GENERATOR="Visual Studio 16 2019"
+		TOOLSET="vc142"
+		MSVC_REAL_VER="16"
+		MSVC_VER="14.2"
+		MSVC_YEAR="2019"
+		MSVC_DISPLAY_YEAR="2019"
+		;;
 	15|15.0|2017 )
 		GENERATOR="Visual Studio 15 2017"
 		TOOLSET="vc141"
@@ -257,6 +265,13 @@ case $VS_VERSION in
 		MSVC_DISPLAY_YEAR="2013"
 		;;
 esac
+
+GENERATOR="Visual Studio 16 2019"
+TOOLSET="vc142"
+MSVC_REAL_VER="16"
+MSVC_VER="14.2"
+MSVC_YEAR="2019"
+MSVC_DISPLAY_YEAR="2019"
 
 case $PLATFORM in
 	x64|x86_64|x86-64|win64|Win64 )
@@ -322,9 +337,9 @@ if [ -z $SKIP_DOWNLOAD ]; then
 
 	# Boost
 	if [ -z $APPVEYOR ]; then
-		download "Boost 1.67.0" \
-			"https://sourceforge.net/projects/boost/files/boost-binaries/1.67.0/boost_1_67_0-msvc-${MSVC_VER}-${BITS}.exe" \
-			"boost-1.67.0-msvc${MSVC_YEAR}-win${BITS}.exe"
+		download "Boost 1.71.0" \
+			"https://sourceforge.net/projects/boost/files/boost-binaries/1.71.0/boost_1_71_0-msvc-${MSVC_VER}-${BITS}.exe" \
+			"boost-1.71.0-msvc${MSVC_VER}-win${BITS}.exe"
 	fi
 
 	# Bullet
@@ -400,7 +415,7 @@ echo
 
 # Boost
 if [ -z $APPVEYOR ]; then
-	printf "Boost 1.67.0... "
+	printf "Boost 1.71.0... "
 else
 	if [ $MSVC_VER -eq 12.0 ]; then
 		printf "Boost 1.58.0 AppVeyor... "
@@ -424,13 +439,13 @@ fi
 			exit 1;
 		fi
 
-		if [ -d ${BOOST_SDK} ] && grep "BOOST_VERSION 106700" Boost/boost/version.hpp > /dev/null; then
+		if [ -d ${BOOST_SDK} ] && grep "BOOST_VERSION 107100" Boost/boost/version.hpp > /dev/null; then
 			printf "Exists. "
 		elif [ -z $SKIP_EXTRACT ]; then
 			rm -rf Boost
 			CI_EXTRA_INNO_OPTIONS=""
 			[ -n "$CI" ] && CI_EXTRA_INNO_OPTIONS="//SUPPRESSMSGBOXES //LOG='boost_install.log'"
-			"${DEPS}/boost-1.67.0-msvc${MSVC_YEAR}-win${BITS}.exe" //DIR="${CWD_DRIVE_ROOT}" //VERYSILENT //NORESTART ${CI_EXTRA_INNO_OPTIONS}
+			"${DEPS}/boost-1.71.0-msvc${MSVC_VER}-win${BITS}.exe" //DIR="${CWD_DRIVE_ROOT}" //VERYSILENT //NORESTART ${CI_EXTRA_INNO_OPTIONS}
 			mv "${CWD_DRIVE_ROOT_BASH}" "${BOOST_SDK}"
 		fi
 		add_cmake_opts -DBOOST_ROOT="$BOOST_SDK" \

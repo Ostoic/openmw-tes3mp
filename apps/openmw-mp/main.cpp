@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     vector<string> plugins(Utils::split(mgr.getString("plugins", "Plugins"), ','));
 
     Utils::printVersion("TES3MP dedicated server", TES3MP_VERSION, version.mCommitHash, TES3MP_PROTO_VERSION);
-    
+
     Script::SetModDir(dataDirectory);
 
 #ifdef ENABLE_LUA
