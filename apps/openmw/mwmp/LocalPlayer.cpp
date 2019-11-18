@@ -465,11 +465,9 @@ void LocalPlayer::updateCell(bool forceUpdate)
         getNetworking()->getPlayerPacket(ID_PLAYER_CELL_CHANGE)->Send();
 
         isChangingRegion = false;
-<<<<<<< HEAD
         auto& mumble = MumbleLink::getInstance();
         mumble.setContext(this->getNetworking()->serverAddress().ToString());
         mumble.setCell(this->cell);
-=======
 
         // If this is an interior cell, are there any other players in it? If so,
         // enable their markers
@@ -477,7 +475,6 @@ void LocalPlayer::updateCell(bool forceUpdate)
         {
             mwmp::PlayerList::enableMarkers(*ptrCell);
         }
->>>>>>> 57f84914c35372dd9e4e8d587a6aba598f651348
     }
 }
 
