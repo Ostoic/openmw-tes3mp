@@ -158,6 +158,114 @@ void Worldstate::addRecords()
             RecordHelper::overrideWeaponRecord(record);
         }
     }
+    else if (recordsType == mwmp::RECORD_TYPE::CONTAINER)
+    {
+        for (auto &&record : containerRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- container record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideContainerRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::DOOR)
+    {
+        for (auto &&record : doorRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- door record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideDoorRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::ACTIVATOR)
+    {
+        for (auto &&record : activatorRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- activator record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideActivatorRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::STATIC)
+    {
+        for (auto &&record : staticRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- static record %s\n-- baseId is %s", record.data.mId.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideStaticRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::INGREDIENT)
+    {
+        for (auto &&record : ingredientRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- ingredient record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideIngredientRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::APPARATUS)
+    {
+        for (auto &&record : apparatusRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- apparatus record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideApparatusRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::LOCKPICK)
+    {
+        for (auto &&record : lockpickRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- lockpick record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideLockpickRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::PROBE)
+    {
+        for (auto &&record : probeRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- probe record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideProbeRecord(record);
+        }
+    }
+    else if (recordsType == mwmp::RECORD_TYPE::REPAIR)
+    {
+        for (auto &&record : repairRecords)
+        {
+            bool hasBaseId = !record.baseId.empty();
+
+            LOG_APPEND(Log::LOG_INFO, "- repair record %s, %s\n-- baseId is %s", record.data.mId.c_str(), record.data.mName.c_str(),
+                hasBaseId ? record.baseId.c_str() : "empty");
+
+            RecordHelper::overrideRepairRecord(record);
+        }
+    }
 }
 
 bool Worldstate::containsExploredMapTile(int cellX, int cellY)

@@ -57,6 +57,8 @@
     {"SetRecordFlags",                          RecordsDynamicFunctions::SetRecordFlags},\
     {"SetRecordValue",                          RecordsDynamicFunctions::SetRecordValue},\
     {"SetRecordWeight",                         RecordsDynamicFunctions::SetRecordWeight},\
+    {"SetRecordQuality",                        RecordsDynamicFunctions::SetRecordQuality},\
+    {"SetRecordUses",                           RecordsDynamicFunctions::SetRecordUses},\
     \
     {"SetRecordArmorRating",                    RecordsDynamicFunctions::SetRecordArmorRating},\
     {"SetRecordHealth",                         RecordsDynamicFunctions::SetRecordHealth},\
@@ -82,7 +84,14 @@
     {"SetRecordLevel",                          RecordsDynamicFunctions::SetRecordLevel},\
     {"SetRecordMagicka",                        RecordsDynamicFunctions::SetRecordMagicka},\
     {"SetRecordFatigue",                        RecordsDynamicFunctions::SetRecordFatigue},\
+    \
     {"SetRecordAIFight",                        RecordsDynamicFunctions::SetRecordAIFight},\
+    {"SetRecordAIFlee",                         RecordsDynamicFunctions::SetRecordAIFlee},\
+    {"SetRecordAIAlarm",                        RecordsDynamicFunctions::SetRecordAIAlarm},\
+    {"SetRecordAIServices",                     RecordsDynamicFunctions::SetRecordAIServices},\
+    \
+    {"SetRecordOpenSound",                      RecordsDynamicFunctions::SetRecordOpenSound},\
+    {"SetRecordCloseSound",                     RecordsDynamicFunctions::SetRecordCloseSound},\
     \
     {"SetRecordIdByIndex",                      RecordsDynamicFunctions::SetRecordIdByIndex},\
     {"SetRecordEnchantmentIdByIndex",           RecordsDynamicFunctions::SetRecordEnchantmentIdByIndex},\
@@ -517,6 +526,24 @@ public:
     static void SetRecordWeight(double weight) noexcept;
 
     /**
+    * \brief Set the item quality of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param weight The weight of the record.
+    * \return void
+    */
+    static void SetRecordQuality(double quality) noexcept;
+
+    /**
+    * \brief Set the number of uses of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param uses The number of uses of the record.
+    * \return void
+    */
+    static void SetRecordUses(int uses) noexcept;
+
+    /**
     * \brief Set the armor rating of the temporary record stored on the server
     * for the currently specified record type.
     *
@@ -711,6 +738,51 @@ public:
     * \return void
     */
     static void SetRecordAIFight(int aiFight) noexcept;
+
+    /**
+    * \brief Set the AI flee value of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param aiFlee The AI flee value of the record.
+    * \return void
+    */
+    static void SetRecordAIFlee(int aiFlee) noexcept;
+
+    /**
+    * \brief Set the AI alarm value of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param aiAlarm The AI alarm value of the record.
+    * \return void
+    */
+    static void SetRecordAIAlarm(int aiAlarm) noexcept;
+
+    /**
+    * \brief Set the AI services value of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param aiServices The AI services value of the record.
+    * \return void
+    */
+    static void SetRecordAIServices(int aiServices) noexcept;
+
+    /**
+    * \brief Set the opening sound of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param sound The opening sound of the record.
+    * \return void
+    */
+    static void SetRecordOpenSound(const char* sound) noexcept;
+
+    /**
+    * \brief Set the closing sound of the temporary record stored on the server for the
+    * currently specified record type.
+    *
+    * \param sound The closing sound of the record.
+    * \return void
+    */
+    static void SetRecordCloseSound(const char* sound) noexcept;
 
     /**
     * \brief Set the id of the record at a certain index in the records stored on the server.

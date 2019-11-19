@@ -24,6 +24,18 @@ namespace RecordHelper
     bool doesMiscellaneousRecordExist(const std::string& id);
     bool doesWeaponRecordExist(const std::string& id);
 
+    bool doesContainerRecordExist(const std::string& id);
+    bool doesDoorRecordExist(const std::string& id);
+
+    bool doesActivatorRecordExist(const std::string& id);
+    bool doesStaticRecordExist(const std::string& id);
+
+    bool doesIngredientRecordExist(const std::string& id);
+    bool doesApparatusRecordExist(const std::string& id);
+    bool doesLockpickRecordExist(const std::string& id);
+    bool doesProbeRecordExist(const std::string& id);
+    bool doesRepairRecordExist(const std::string& id);
+
     std::string createCreatureRecord(const ESM::Creature& record);
     std::string createNpcRecord(const ESM::NPC& record);
 
@@ -40,6 +52,18 @@ namespace RecordHelper
     void overrideMiscellaneousRecord(const mwmp::MiscellaneousRecord& record);
     void overrideWeaponRecord(const mwmp::WeaponRecord& record);
 
+    void overrideContainerRecord(const mwmp::ContainerRecord& record);
+    void overrideDoorRecord(const mwmp::DoorRecord& record);
+
+    void overrideActivatorRecord(const mwmp::ActivatorRecord& record);
+    void overrideStaticRecord(const mwmp::StaticRecord& record);
+
+    void overrideIngredientRecord(const mwmp::IngredientRecord& record);
+    void overrideApparatusRecord(const mwmp::ApparatusRecord& record);
+    void overrideLockpickRecord(const mwmp::LockpickRecord& record);
+    void overrideProbeRecord(const mwmp::ProbeRecord& record);
+    void overrideRepairRecord(const mwmp::RepairRecord& record);
+
     void overrideCreatureRecord(const ESM::Creature& record);
     void overrideNpcRecord(const ESM::NPC& record);
 
@@ -52,6 +76,18 @@ namespace RecordHelper
     void overrideClothingRecord(const ESM::Clothing& record);
     void overrideMiscellaneousRecord(const ESM::Miscellaneous& record);
     void overrideWeaponRecord(const ESM::Weapon& record);
+
+    void overrideContainerRecord(const ESM::Container& record);
+    void overrideDoorRecord(const ESM::Door& record);
+
+    void overrideActivatorRecord(const ESM::Activator& record);
+    void overrideStaticRecord(const ESM::Static& record);
+
+    void overrideIngredientRecord(const ESM::Ingredient& record);
+    void overrideApparatusRecord(const ESM::Apparatus& record);
+    void overrideLockpickRecord(const ESM::Lockpick& record);
+    void overrideProbeRecord(const ESM::Probe& record);
+    void overrideRepairRecord(const ESM::Repair& record);
 }
 
 
